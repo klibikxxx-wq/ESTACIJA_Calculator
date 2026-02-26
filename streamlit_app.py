@@ -32,11 +32,11 @@ calc_battery = calc_solar * 2.0  # Vidēji 2kWh baterija uz 1kW saules industri�
 
 # Cenu slīde (lētāk, ja sistēma lielāka)
 if calc_solar < 20:
-    sol_price, bat_price = 850, 450
+    sol_price, bat_price = 650, 350
 elif calc_solar < 50:
-    sol_price, bat_price = 750, 300
+    sol_price, bat_price = 600, 300
 else:
-    sol_price, bat_price = 700, 245 # Tava industriālā cena
+    sol_price, bat_price = 550, 220 # Tava industriālā cena
 
 total_cost = (calc_solar * sol_price) + (calc_battery * bat_price)
 net_investment = total_cost * (1 - grant_pct)
