@@ -19,6 +19,8 @@ with st.form("ievades_forma"):
 # --- SĀNU JOSLA IESTATĪJUMIEM ---
 st.sidebar.header("⚙️ Finanšu Iestatījumi")
 grant_pct = st.sidebar.slider("Valsts atbalsts (%)", 0, 50, 30) / 100
+interest = st.sidebar.slider("Kredīta procenti (%)", 0.0, 10.0, 2.0) / 100
+years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], index=1)
 
 # --- SMART OPTIMIZĀCIJAS LOĢIKA ---
 if usage <= 2000:
