@@ -39,8 +39,8 @@ else:
     fixed_grant = st.sidebar.number_input("Valsts atbalsta summa (€)", value=6500)
     grant_pct = 0
 
-interest_rate = st.sidebar.slider("Kredīta procenti (%)", 0.0, 15.0, 5.9) / 100
-loan_years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [5, 7, 10, 15], index=1)
+interest_rate = st.sidebar.slider("Kredīta procenti (%)", 0.0, 15.0, 2.0) / 100
+loan_years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], index=1)
 
 # --- JAUNĀ LINEĀRĀ OPTIMIZĀCIJAS LOĢIKA ---
 # Sākumpunkts: 600 kWh -> 6 kW
