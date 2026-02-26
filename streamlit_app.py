@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 
 st.set_page_config(page_title="Saules & Akumulatoru ROI", page_icon="☀️")
-
+st.image("New_logo1.png", width=200) 
 # --- VIRSRAKSTS ---
 st.title("☀️ Saules un Akumulatoru ROI Kalkulators")
 
