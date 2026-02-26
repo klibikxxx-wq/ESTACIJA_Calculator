@@ -4,7 +4,7 @@ import numpy as np
 st.set_page_config(page_title="Saules & Akumulatoru ROI", page_icon="⚡")
 st.image("New_logo1.png", width=300) 
 # --- VIRSRAKSTS ---
-st.title("☀️ Saules un Akumulatoru ROI Kalkulators")
+st.title("⚡ Saules un Akumulatoru ROI Kalkulators")
 
 # --- KLIENTA TIPS ---
 client_type = st.radio(
