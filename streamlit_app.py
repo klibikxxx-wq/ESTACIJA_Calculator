@@ -14,11 +14,8 @@ with st.form("ievades_forma"):
     with col_input1:
         usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=9000)
     with col_input2:
-<<<<<<< HEAD
         bill = st.number_input("Mēneša rēķins (€ ar PVN)", min_value=1.0, value=1500.0)
-=======
         bill = st.number_input("Mēneša rēķins (€ ar PVN)", min_value=1.0, value=250.0)
->>>>>>> edad38f6a6e2eb370c8ea25327f302e87a21e878
     
     submit_button = st.form_submit_button("Aprēķināt risinājumu")
 
