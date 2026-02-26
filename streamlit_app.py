@@ -27,7 +27,7 @@ years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], index=1)
 # --- APRĒĶINU LOĢIKA (Tikai ja poga ir nospiesta vai dati jau ir) ---
 if submit_button or usage:
     # 1. Optimizācija (40% saules likums, 1.5x akumulatora attiecība)
-    calc_solar = (usage * 12 * 0.8) / 1000
+    calc_solar = (usage * 12 * 0.6) / 1000
     calc_battery = calc_solar * 1.5
 
     # 2. Dinamiskās cenas (Ekonomija uz apjomu)
