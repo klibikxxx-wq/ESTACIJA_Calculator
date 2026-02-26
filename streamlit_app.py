@@ -12,9 +12,9 @@ with st.form("ievades_forma"):
     st.subheader("📊 Klienta Enerģijas Dati")
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=19000, help="Vidējais mēneša patēriņš gadā")
+        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=1000, help="Vidējais mēneša patēriņš gadā")
     with col_input2:
-        bill = st.number_input("Mēneša rēķins (€)", min_value=1, value=3100, help="Vidējais rēķins ieskaitot PVN un ST")
+        bill = st.number_input("Mēneša rēķins (€)", min_value=1, value=250, help="Vidējais rēķins ieskaitot PVN un ST")
     
     submit_button = st.form_submit_button("Aprēķināt optimālo risinājumu")
 
@@ -22,17 +22,17 @@ with st.form("ievades_forma"):
 st.sidebar.header("⚙️ Finanšu Iestatījumi")
 grant_pct = st.sidebar.slider("Valsts atbalsts (%)", 0, 50, 30) / 100
 interest = st.sidebar.slider("Kredīta procenti (%)", 0.0, 10.0, 5.0) / 100
-years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [5, 7, 10, 15], index=1)
+years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], index=1)
 
 # --- APRĒĶINU LOĢIKA (Tikai ja poga ir nospiesta vai dati jau ir) ---
 if submit_button or usage:
     # 1. Optimizācija (40% saules likums, 1.5x akumulatora attiecība)
-    calc_solar = (usage * 12 * 0.4) / 1000
+    calc_solar = (usage * 12 * 0.8) / 1000
     calc_battery = calc_solar * 1.5
 
     # 2. Dinamiskās cenas (Ekonomija uz apjomu)
-    sol_price = 1100 if calc_solar < 15 else (900 if calc_solar < 40 else 750)
-    bat_price = 500 if calc_battery < 20 else (380 if calc_battery < 100 else 245)
+    sol_price = 750 if calc_solar < 15 else (700 if calc_solar < 40 else 650)
+    bat_price = 450 if calc_battery < 20 else (380 if calc_battery < 100 else 245)
 
     total_cost = (calc_solar * sol_price) + (calc_battery * bat_price)
     net_investment = total_cost * (1 - grant_pct)
