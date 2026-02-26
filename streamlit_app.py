@@ -49,7 +49,7 @@ else:
     calc_solar = 6.0 + (usage - 600) * (44 / 8400)
 
 # Baterija (piemēram, pie 14kW saules būs 10-14kWh baterija)
-calc_battery = calc_solar * 1.3 
+calc_battery = calc_solar * 1.4 
 
 # --- CENU KALIBRĒŠANA (Lai 14kW sistēma ar PVN būtu ~14k EUR) ---
 # Ja calc_solar ir 14, tad (14 * sol_price + 14 * bat_price) * 1.21 = 14000
