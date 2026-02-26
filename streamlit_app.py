@@ -12,7 +12,7 @@ with st.form("ievades_forma"):
     st.subheader("📊 Klienta Enerģijas Dati")
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=9000)
+        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=1500)
     with col_input2:
         bill = st.number_input("Mēneša rēķins (€ ar PVN)", min_value=1.0, value=250.0)
     
