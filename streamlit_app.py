@@ -27,8 +27,8 @@ loan_years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], ind
 # --- LINEĀRĀ OPTIMIZĀCIJAS LOĢIKA ---
 # Aprēķinām saules jaudu lineāri: 1500kWh -> 14kW; 9000kWh -> 50kW.
 # Formula: jauda = 14 + (patēriņš - 1500) * ( (50-14) / (9000-1500) )
-calc_solar = 14 + (max(0, usage - 1500) * (36 / 7500))
-calc_battery = calc_solar * 2.0  # Vidēji 2kWh baterija uz 1kW saules industriāliem
+calc_solar = 6 + (max(0, usage - 1500) * (36 / 7500))
+calc_battery = calc_solar * 1.5  # Vidēji 2kWh baterija uz 1kW saules industriāliem
 
 # Cenu slīde (lētāk, ja sistēma lielāka)
 if calc_solar < 20:
