@@ -12,17 +12,17 @@ with st.form("ievades_forma"):
     st.subheader("📊 Klienta Enerģijas Dati")
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=9000)
+        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=1500)
     with col_input2:
-        bill = st.number_input("Mēneša rēķins (€ ar PVN)", min_value=1.0, value=1500.0)
+        bill = st.number_input("Mēneša rēķins (€ ar PVN)", min_value=1.0, value=250)
     
     submit_button = st.form_submit_button("Aprēķināt risinājumu")
 
 # --- SĀNU JOSLA: FINANSES ---
 st.sidebar.header("⚙️ Finanšu Iestatījumi")
 grant_pct = st.sidebar.slider("Valsts atbalsts (%)", 0, 50, 30) / 100
-interest_rate = st.sidebar.slider("Kredīta procenti (%)", 0.0, 15.0, 5.9) / 100
-loan_years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [5, 7, 10, 15], index=1)
+interest_rate = st.sidebar.slider("Kredīta procenti (%)", 0.0, 15.0, 2) / 100
+loan_years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], index=1)
 
 # --- LINEĀRĀ OPTIMIZĀCIJAS LOĢIKA ---
 # Aprēķinām saules jaudu lineāri: 1500kWh -> 14kW; 9000kWh -> 50kW.
@@ -32,11 +32,11 @@ calc_battery = calc_solar * 2.0  # Vidēji 2kWh baterija uz 1kW saules industri�
 
 # Cenu slīde (lētāk, ja sistēma lielāka)
 if calc_solar < 20:
-    sol_price, bat_price = 850, 450
+    sol_price, bat_price = 750, 350
 elif calc_solar < 50:
-    sol_price, bat_price = 750, 300
+    sol_price, bat_price = 700, 300
 else:
-    sol_price, bat_price = 700, 245 # Tava industriālā cena
+    sol_price, bat_price = 650, 230 # Tava industriālā cena
 
 total_cost = (calc_solar * sol_price) + (calc_battery * bat_price)
 net_investment = total_cost * (1 - grant_pct)
