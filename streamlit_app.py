@@ -3,65 +3,73 @@ import streamlit as st
 st.set_page_config(page_title="Saules & Akumulatoru Optimizētājs", page_icon="☀️")
 st.logo("New_logo1.png", size="large")
 
-# --- STILS UN VIRSRAKSTS ---
 st.title("☀️ Saules un Akumulatoru ROI Kalkulators")
-st.write("Ievadiet klienta datus, lai aprēķinātu tehniski un ekonomiski pamatotāko sistēmu.")
 
-# --- IEVADES FORMA (Pirmā lieta, ko redz telefonā) ---
+# --- IEVADES FORMA ---
 with st.form("ievades_forma"):
     st.subheader("📊 Klienta Enerģijas Dati")
     col_input1, col_input2 = st.columns(2)
     with col_input1:
-        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=1000, help="Vidējais mēneša patēriņš gadā")
+        usage = st.number_input("Mēneša patēriņš (kWh)", min_value=1, value=1500)
     with col_input2:
-        bill = st.number_input("Mēneša rēķins (€)", min_value=1, value=250, help="Vidējais rēķins ieskaitot PVN un ST")
+        bill = st.number_input("Mēneša rēķins (€)", min_value=1, value=300)
     
     submit_button = st.form_submit_button("Aprēķināt optimālo risinājumu")
 
-# --- PAPILDUS IESTATĪJUMI SĀNU JOSLĀ ---
+# --- SĀNU JOSLA IESTATĪJUMIEM ---
 st.sidebar.header("⚙️ Finanšu Iestatījumi")
 grant_pct = st.sidebar.slider("Valsts atbalsts (%)", 0, 50, 30) / 100
-interest = st.sidebar.slider("Kredīta procenti (%)", 0.0, 10.0, 5.0) / 100
-years = st.sidebar.selectbox("Kredīta termiņš (Gadi)", [2, 3, 4, 5], index=1)
 
-# --- APRĒĶINU LOĢIKA (Tikai ja poga ir nospiesta vai dati jau ir) ---
-if submit_button or usage:
-    # 1. Optimizācija (40% saules likums, 1.5x akumulatora attiecība)
-    calc_solar = (usage * 12 * 0.6) / 1000
+# --- SMART OPTIMIZĀCIJAS LOĢIKA ---
+if usage <= 2000:
+    # Mājsaimniecības profils (ap 1500 kWh -> 14kW)
+    calc_solar = 14.0
+    calc_battery = 10.0 # Standarta mājas baterija
+    sol_price = 850     # Cena par kW mājsaimniecībām
+    bat_price = 450     # Cena par kWh mājsaimniecībām
+elif usage >= 8000:
+    # Industriālais profils (ap 9000 kWh -> 50kW)
+    calc_solar = 50.0
+    calc_battery = 100.0 # Optimizēta industriālā baterija
+    sol_price = 700      # Industriālā cena (tavs 35k/50kW vidējais)
+    bat_price = 245      # Industriālā baterijas cena
+else:
+    # Vidējais segments (Lineāra pāreja starp 14kW un 50kW)
+    calc_solar = 14 + (usage - 2000) * (36 / 6000)
     calc_battery = calc_solar * 1.5
+    sol_price = 800
+    bat_price = 350
 
-    # 2. Dinamiskās cenas (Ekonomija uz apjomu)
-    sol_price = 750 if calc_solar < 15 else (700 if calc_solar < 40 else 650)
-    bat_price = 450 if calc_battery < 20 else (380 if calc_battery < 100 else 245)
+# --- APRĒĶINI ---
+total_cost = (calc_solar * sol_price) + (calc_battery * bat_price)
+net_investment = total_cost * (1 - grant_pct)
 
-    total_cost = (calc_solar * sol_price) + (calc_battery * bat_price)
-    net_investment = total_cost * (1 - grant_pct)
+# Ietaupījums: Saules raža (1000h) + ST tarifs + Baterijas arbitrāža
+solar_savings = (calc_solar * 1000) * ((bill/usage) + 0.045)
+battery_savings = (calc_battery * 280 * 0.08 * 0.85)
+total_annual_savings = solar_savings + battery_savings
+payback = net_investment / total_annual_savings
 
-    # 3. Ietaupījuma loģika
-    # Ietaupījums = Saražotā enerģija * (Elektrības cena + ST mainīgā daļa 0.045 EUR)
-    solar_savings = (calc_solar * 1000) * ((bill/usage) + 0.045)
-    # Akumulatora peļņa no biržas cenas starpības
-    battery_savings = (calc_battery * 280 * 0.08 * 0.85)
-    total_annual_savings = solar_savings + battery_savings
-    payback = net_investment / total_annual_savings
-
-    # --- REZULTĀTU ATTĒLOŠANA ---
+# --- REZULTĀTI ---
+if submit_button or usage:
     st.divider()
-    st.subheader("💡 Rekomendējamā Sistēma")
+    st.subheader("💡 Rekomendējamais risinājums")
     
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Saules jauda", f"{calc_solar:.1f} kW")
-    m2.metric("Akumulatora ietilpība", f"{calc_battery:.1f} kWh")
-    m3.metric("Atmaksāšanās laiks", f"{payback:.1f} Gadi")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Saules sistēma", f"{calc_solar:.1f} kW")
+    col2.metric("Akumulators", f"{calc_battery:.1f} kWh")
+    col3.metric("Atmaksāšanās", f"{payback:.1f} Gadi")
 
-    st.success(f"Kopējās investīcijas: {total_cost:,.2f} € (pēc atbalsta: {net_investment:,.2f} €)")
+    # Finanšu kopsavilkums
+    st.write(f"### Kopējās izmaksas: **{total_cost:,.0f} €**")
+    st.write(f"Valsts atbalsts ({int(grant_pct*100)}%): **-{total_cost*grant_pct:,.0f} €**")
+    st.success(f"Tava gala investīcija: **{net_investment:,.0f} €**")
 
-    # --- GRAFIKS ---
-    st.subheader("📈 Ietaupījuma prognoze")
-    st.info(f"Prognozētais ietaupījums mēnesī: {total_annual_savings/12:,.2f} €")
+    # Ietaupījuma sadalījums
+    st.info(f"Prognozētais ietaupījums: **{total_annual_savings/12:,.2f} € / mēnesī**")
     
-    # Neliels vizuāls grafiks atmaksas gaitai
-    yearly_data = {f"{i}. gads": total_annual_savings * i for i in range(1, int(payback + 3))}
-    st.area_chart(yearly_data)
-
-    st.caption("Aprēķinā iekļauta Sadales Tīkla jaudas maksas ekonomija (€0.045/kWh) un akumulatora cenas arbitrāža.")
+    # Grafiks (Atmaksas līkne)
+    years_to_show = int(payback + 4)
+    chart_data = {f"{i}. gads": (total_annual_savings * i) - net_investment for i in range(years_to_show)}
+    st.area_chart(chart_data)
+    st.caption("Grafiks attēlo tīro peļņu pēc investīcijas segšanas.")
