@@ -1,6 +1,7 @@
 import streamlit as st
 
 st.set_page_config(page_title="Saules & Akumulatoru Optimizētājs", page_icon="☀️")
+st.logo("New_logo1.png", size="large")
 
 # --- STILS UN VIRSRAKSTS ---
 st.title("☀️ Saules un Akumulatoru ROI Kalkulators")
