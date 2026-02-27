@@ -6,7 +6,7 @@ import numpy as np
 # =================================================================
 
 TECHNICAL_PARAMS = {
-    "solar_yield": 1050,      # kWh saražoti uz 1kW gadā
+    "solar_yield": 800,      # kWh saražoti uz 1kW gadā
     "grid_fee_save": 0.045,   # ST mainīgā daļa (€/kWh)
     "bat_cycles": 365,        # Pilni cikli gadā arbitrāžai
     "arb_spread": 0.10,       # Cenu starpība (€/kWh)
