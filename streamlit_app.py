@@ -42,7 +42,7 @@ with col1:
 
 with col2:
     fin_type = st.radio("Finansējuma veids", ["Kredīts", "Pašu kapitāls"], horizontal=True)
-    grant_pct = st.slider("Valsts atbalsts (%)", 10, 60, 30) / 100
+    grant_pct = st.slider("Valsts atbalsts (%)", 10, 80, 30) / 100
 
 if fin_type == "Kredīts":
     c_f1, c_f2 = st.columns(2)
