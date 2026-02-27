@@ -87,7 +87,7 @@ if usage > 0:
         pmt = 0
 
     # --- 3. REZULTĀTU CILNES ---
-    tab1, tab2, tab3 = st.tabs(["📋 Piedāvājuma Kopsavilkums", "⚖️ Salīdzinājums", "📄 Pieņemtie dati"])
+    tab1, tab2, tab3 = st.tabs(["📋 Kopsavilkums", "⚖️ Salīdzinājums", "📄 Pieņemtie dati"])
 
     with tab1:
         st.markdown("### Rekomendētā sistēmas jauda")
