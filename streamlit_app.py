@@ -59,7 +59,7 @@ bill = bill_in if bill_in else (usage * 0.16 if usage else 0)
 
 if usage > 0:
     calc_solar = 8.0 + (max(0, usage - 600) * (44 / 8400)) if usage > 600 else 8.0
-    calc_battery = calc_solar * 1.6 
+    calc_battery = calc_solar * 1.4 
 
     if calc_solar < PRICING_CONFIG["small"]["max_kw"]:
         s_price = PRICING_CONFIG["small"]["solar_eur_kw"]
