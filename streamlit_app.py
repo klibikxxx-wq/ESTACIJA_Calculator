@@ -8,7 +8,7 @@ import numpy as np
 TECHNICAL_PARAMS = {
     "solar_yield": 1050,      # kWh saražoti uz 1kW gadā
     "grid_fee_save": 0.045,   # ST mainīgā daļa (€/kWh)
-    "bat_cycles": 300,        # Pilni cikli gadā arbitrāžai
+    "bat_cycles": 365,        # Pilni cikli gadā arbitrāžai
     "arb_spread": 0.10,       # Cenu starpība (€/kWh)
     "bat_eff": 0.88,          # Baterijas lietderība
     "degradation": 0.005,     # Paneļu jaudas zudums gadā
@@ -92,7 +92,7 @@ if usage > 0:
     with tab1:
         st.markdown("### Rekomendētā sistēmas jauda")
         m1, m2, m3 = st.columns(3)
-        m1.metric("Saules Paneļi", f"{calc_solar:.1f} kW")
+        m1.metric("Saules Paneļi", f"{calc_solar:.1f} kWp")
         m2.metric("Bateriju Krātuve", f"{calc_battery:.1f} kWh")
         m3.metric("Atmaksāšanās", f"{net_inv/total_save_y1:.1f} Gadi")
 
@@ -131,11 +131,12 @@ if usage > 0:
 
     with tab3:
         st.subheader("Kā mēs aprēķinām Jūsu ieguvumus?")
-        st.write("Lai aprēķins būtu maksimāli precīzs, mēs izmantojam sekojošus tirgus pieņēmumus:")
-        
+        st.write("Lai aprēķins būtu maksimāli precīzs jāveic individuāla objekta apsekošana un simulācijas izveide")
+        st.write("Šis aprēķins ir provizorisks, taču mēs izmantojam sekojošus pieņēmumus")
+                 
         c1, c2 = st.columns(2)
         with c1:
-            st.info(f"☀️ **Saules ražība:** {TECHNICAL_PARAMS['solar_yield']} kWh gadā uz katru uzstādīto kW.")
+            st.info(f"☀️ **Saules ražība:** {TECHNICAL_PARAMS['solar_yield']} kWh gadā uz katru uzstādīto kWp.")
             st.info(f"📉 **Sistēmas nolietojums:** Aprēķinā iekļauts paneļu efektivitātes zudums {TECHNICAL_PARAMS['degradation']*100}% gadā.")
             st.info(f"⚡ **ST tarifs:** Mainīgā Sadales tīkla tarifa ietaupījums {TECHNICAL_PARAMS['grid_fee_save']} €/kWh.")
         with c2:
