@@ -1,64 +1,82 @@
 import streamlit as st
 import numpy as np
 
-st.set_page_config(page_title="ESTACIJA Business ROI Pro", page_icon="📈", layout="wide")
+# ==========================================
+# ⚙️ KONFIGURĀCIJAS PARAMETRI (Maini šeit)
+# ==========================================
+PRICING_CONFIG = {
+    "small": {"max_kw": 20, "solar_eur_kw": 700, "bat_eur_kwh": 250},
+    "medium": {"max_kw": 50, "solar_eur_kw": 650, "bat_eur_kwh": 220},
+    "large": {"solar_eur_kw": 600, "bat_eur_kwh": 200}
+}
 
-# --- VIRSRAKSTS ---
+TECHNICAL_PARAMS = {
+    "solar_yield": 1050,      # kWh saražoti uz 1kW gadā
+    "grid_fee_save": 0.045,   # ST mainīgā daļa (ietaupījums)
+    "bat_cycles": 300,        # Pilni cikli gadā arbitrāžai
+    "arb_spread": 0.10,       # Cenas starpība (nakts/diena)
+    "bat_eff": 0.88,          # Baterijas efektivitāte (round-trip)
+    "degradation": 0.005,     # Paneļu jaudas zudums gadā (0.5%)
+    "elec_inflation": 0.03    # Elektrības cenas pieaugums gadā (3%)
+}
+
+# ==========================================
+# 🖥️ LIETOTNES IESTATĪJUMI
+# ==========================================
+st.set_page_config(page_title="ESTACIJA Business ROI Pro", page_icon="📈", layout="wide")
 st.image("New_logo1.png", width=300)
 st.title("Saules & Akumulatoru ROI Pro")
-st.markdown("### Profesionāla ekonomiskā simulācija biznesa klientiem")
 
-# --- 1. DATU IEVADE (BEZ FORMAS TŪLĪTĒJAI ATJAUNOŠANAI) ---
-st.subheader("📊 1. Enerģijas dati")
-col1, col2 = st.columns(2)
+# --- 1. IEVADES DATI ---
+st.subheader("📊 1. Klienta un Finansējuma dati")
+col1, col2, col3, col4 = st.columns([1.5, 1.5, 1, 1])
+
 with col1:
-    usage_in = st.number_input("Mēneša patēriņš (kWh)", min_value=0.0, value=None, help="Klienta vidējais patēriņš mēnesī")
+    usage_in = st.number_input("Mēneša patēriņš (kWh)", min_value=0.0, value=None)
 with col2:
     bill_in = st.number_input("Mēneša rēķins (€ bez PVN)", min_value=0.0, value=None)
-
-st.divider()
-
-st.subheader("🏦 2. Finansējuma dati (Kredīts)")
-col3, col4, col5 = st.columns(3)
 with col3:
-    fin_type = st.radio("Finansējuma veids", ["Kredīts", "Pašu kapitāls"], horizontal=True)
+    fin_type = st.radio("Finansējums", ["Kredīts", "Pašu kapitāls"], horizontal=True)
 with col4:
-    # Noklusējuma 1.9%
-    interest_rate = st.slider("Kredīta procenti (%)", 1.9, 15.0, 1.9, disabled=(fin_type == "Pašu kapitāls")) / 100
-with col5:
-    # Noklusējuma 5 gadi
-    loan_years = st.select_slider("Termiņš (Gadi)", options=list(range(1, 11)), value=5, disabled=(fin_type == "Pašu kapitāls"))
+    grant_pct = st.slider("Valsts atbalsts (%)", 0, 50, 30) / 100
 
-# --- SĀNU JOSLA: VALSTS ATBALSTS ---
-st.sidebar.header("⚙️ Konfigurācija")
-grant_pct = st.sidebar.slider("Valsts atbalsts (%)", 0, 50, 30) / 100
+# Kredīta specifika (parādās tikai ja izvēlēts kredīts)
+if fin_type == "Kredīts":
+    c_f1, c_f2 = st.columns(2)
+    with c_f1:
+        interest_rate = st.slider("Kredīta procenti (%)", 1.9, 15.0, 1.9) / 100
+    with c_f2:
+        loan_years = st.select_slider("Termiņš (Gadi)", options=list(range(1, 11)), value=5)
+else:
+    interest_rate, loan_years = 0.0, 0
 
-# --- 2. LOGIKA UN APRĒĶINI ---
-# Datu validācija un automātiskā papildināšana
+# --- 2. APRĒĶINU LOĢIKA ---
 usage = usage_in if usage_in else (bill_in / 0.16 if bill_in else 0)
 bill = bill_in if bill_in else (usage * 0.16 if usage else 0)
 
 if usage > 0:
-    # Sistēmas izmērs (Lineārs: 600kWh -> 6kW, 9000kWh -> 50kW)
-    if usage <= 600:
-        calc_solar = 6.0
-    else:
-        calc_solar = 6.0 + (usage - 600) * (44 / 8400)
-    
+    # Sistēmas jaudas noteikšana (Lineāra loģika)
+    calc_solar = 6.0 + (max(0, usage - 600) * (44 / 8400)) if usage > 600 else 6.0
     calc_battery = calc_solar * 2.0 
 
-    # Cenu modelis kalibrēts biznesam (Bez PVN)
-    if calc_solar < 20: sol_p, bat_p = 700, 250 # Aptuveni 14kW sistēma būs ap 13-14k EUR
-    elif calc_solar < 50: sol_p, bat_p = 650, 220
-    else: sol_p, bat_p = 600, 200
+    # Cenu piemērošana no konfigurācijas
+    if calc_solar < PRICING_CONFIG["small"]["max_kw"]:
+        s_price = PRICING_CONFIG["small"]["solar_eur_kw"]
+        b_price = PRICING_CONFIG["small"]["bat_eur_kwh"]
+    elif calc_solar < PRICING_CONFIG["medium"]["max_kw"]:
+        s_price = PRICING_CONFIG["medium"]["solar_eur_kw"]
+        b_price = PRICING_CONFIG["medium"]["bat_eur_kwh"]
+    else:
+        s_price = PRICING_CONFIG["large"]["solar_eur_kw"]
+        b_price = PRICING_CONFIG["large"]["bat_eur_kwh"]
 
-    total_cost = (calc_solar * sol_p) + (calc_battery * bat_p)
+    total_cost = (calc_solar * s_price) + (calc_battery * b_price)
     net_inv = total_cost * (1 - grant_pct)
 
-    # Ietaupījumi
+    # Ietaupījumu aprēķins izmantojot TECHNICAL_PARAMS
     p_kwh = bill / usage if usage > 0 else 0.16
-    solar_save_y1 = (calc_solar * 1050) * (p_kwh + 0.045)
-    arb_save_y1 = (calc_battery * 300 * 0.10 * 0.88) 
+    solar_save_y1 = (calc_solar * TECHNICAL_PARAMS["solar_yield"]) * (p_kwh + TECHNICAL_PARAMS["grid_fee_save"])
+    arb_save_y1 = (calc_battery * TECHNICAL_PARAMS["bat_cycles"] * TECHNICAL_PARAMS["arb_spread"] * TECHNICAL_PARAMS["bat_eff"])
     total_save_y1 = solar_save_y1 + arb_save_y1
 
     # Kredīta PMT
@@ -69,63 +87,63 @@ if usage > 0:
     else:
         pmt = 0
 
-    # --- 3. REZULTĀTU CILNES ---
-    tab1, tab2, tab3 = st.tabs(["📋 Kopsavilkums", "⚖️ Salīdzinājums", "⚙️ Pieņēmumi"])
+    # --- 3. REZULTĀTU ATTĒLOŠANA ---
+    tab1, tab2, tab3 = st.tabs(["📋 Piedāvājums", "⚖️ Salīdzinājums", "⚙️ Tehniskie dati"])
 
     with tab1:
-        c_m1, c_m2, c_m3 = st.columns(3)
-        c_m1.metric("Saules stacija", f"{calc_solar:.1f} kW")
-        c_m2.metric("Akumulatoru krātuve", f"{calc_battery:.1f} kWh")
-        c_m3.metric("Atmaksāšanās", f"{net_inv/total_save_y1:.1f} Gadi")
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Saules Jauda", f"{calc_solar:.1f} kW")
+        m2.metric("Baterijas Ietilpība", f"{calc_battery:.1f} kWh")
+        m3.metric("Atmaksāšanās", f"{net_inv/total_save_y1:.1f} Gadi")
 
         st.divider()
-        res1, res2 = st.columns(2)
-        with res1:
-            st.write(f"**Investīcija:** {total_cost:,.0f} €")
-            st.write(f"**Valsts atbalsts:** -{total_cost*grant_pct:,.0f} €")
+        col_res1, col_res2 = st.columns(2)
+        with col_res1:
+            st.markdown(f"**Kopējā sistēmas cena:** {total_cost:,.0f} €")
+            st.markdown(f"**Valsts atbalsts:** -{total_cost*grant_pct:,.0f} €")
             st.success(f"**Gala neto investīcija: {net_inv:,.0f} €**")
-        with res2:
-            st.info(f"**Ietaupījums 1. gadā:** {total_save_y1:,.0f} €")
+        with col_res2:
+            st.info(f"**Ietaupījums gadā:** {total_save_y1:,.0f} €")
             if fin_type == "Kredīts":
-                st.write(f"**Mēneša kredīta maksājums:** {pmt:,.2f} €")
-                cash_flow_m = (total_save_y1 / 12) - pmt
-                st.write(f"**Mēneša Cash-flow:** {cash_flow_m:,.2f} €")
+                st.write(f"**Mēneša kredīts:** {pmt:,.2f} €")
+                st.write(f"**Mēneša peļņa (Cash-flow):** {(total_save_y1/12)-pmt:,.2f} €")
 
     with tab2:
-        st.subheader("Salīdzināt ar 'Neko nedarīt'")
-        st.write("Kumulatīvās izmaksas nākamo 20 gadu laikā (iekļaujot 3% elektrības inflāciju).")
+        st.subheader("Kumulatīvais 20 gadu ietaupījums")
         
-        def calc_costs(years):
-            inf = 0.03
-            nothing = sum([(bill * 12) * ((1 + inf)**y) for y in range(years)])
-            with_sys = net_inv if fin_type == "Pašu kapitāls" else 0
-            for y in range(years):
+        def run_20y_sim():
+            inf = TECHNICAL_PARAMS["elec_inflation"]
+            deg = TECHNICAL_PARAMS["degradation"]
+            nothing_cost = []
+            with_sys_cost = []
+            
+            curr_nothing = 0
+            curr_sys = net_inv if fin_type == "Pašu kapitāls" else 0
+            
+            for y in range(21):
+                nothing_cost.append(curr_nothing)
+                with_sys_cost.append(curr_sys)
+                
+                # Nākamā gada pieaugums
                 annual_bill = (bill * 12) * ((1 + inf)**y)
-                annual_save = total_save_y1 * ((1 + inf)**y) * (0.995**y)
+                annual_save = total_save_y1 * ((1 + inf)**y) * ((1 - deg)**y)
                 loan_cost = (pmt * 12) if (fin_type == "Kredīts" and y < loan_years) else 0
-                with_sys += (annual_bill - annual_save + loan_cost)
-            return nothing, with_sys
+                
+                curr_nothing += annual_bill
+                curr_sys += (annual_bill - annual_save + loan_cost)
+            return nothing_cost, with_sys_cost
 
-        comparison_data = []
-        for y in [5, 10, 20]:
-            n, w = calc_costs(y)
-            comparison_data.append({
-                "Periods": f"{y} gadi",
-                "Maksāt Latvenergo (€)": f"{n:,.0f}",
-                "Ar ESTACIJA sistēmu (€)": f"{w:,.0f}",
-                "IEGUVUMS (€)": f"{n-w:,.0f}"
-            })
+        n_costs, w_costs = run_20y_sim()
+        st.line_chart({"Maksāt Latvenergo": n_costs, "Ar ESTACIJA sistēmu": w_costs})
         
-        st.table(comparison_data)
         
-        st.error(f"Paliekot pie pašreizējā modeļa, Jūs nākamo 20 gadu laikā zaudēsiet aptuveni **{calc_costs(20)[0]-calc_costs(20)[1]:,.0f} €**.")
+        st.error(f"Zaudējumi pēc 20 gadiem neinvestējot: **{n_costs[-1] - w_costs[-1]:,.0f} €**")
 
     with tab3:
-        st.write("### Aprēķina pieņēmumi")
-        st.write("- **Tūlītēja atjaunošanās:** Rezultāti tiek pārrēķināti brīdī, kad maināt jebkuru lauku.")
-        st.write("- **Elektrības inflācija:** Salīdzinājuma tabulā pieņemts fiksēts 3% pieaugums gadā.")
-        st.write("- **Degradācija:** Saules paneļu jaudas samazinājums par 0.5% gadā.")
-        st.write("- **Arbitrāža:** Baterija pelna uz nakts/dienas cenu starpību (~0.10 €/kWh).")
+        st.write("Visi aprēķini balstīti uz šādiem konfigurācijas parametriem:")
+        st.json(TECHNICAL_PARAMS)
+        st.write("Cenu līmeņi (EUR/vienība):")
+        st.json(PRICING_CONFIG)
 
 else:
-    st.info("👋 Ievadiet patēriņu vai rēķina summu, lai uzreiz redzētu aprēķinu.")
+    st.info("Ievadiet datus, lai sāktu!")
