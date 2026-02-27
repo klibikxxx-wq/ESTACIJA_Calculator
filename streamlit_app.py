@@ -75,4 +75,73 @@ if usage > 0:
     net_inv = total_cost * (1 - grant_pct)
 
     p_kwh = bill / usage if usage > 0 else 0.16
-    solar_save_y1 = (calc_solar *
+    solar_save_y1 = (calc_solar * TECHNICAL_PARAMS["solar_yield"]) * (p_kwh + TECHNICAL_PARAMS["grid_fee_save"])
+    arb_save_y1 = (calc_battery * TECHNICAL_PARAMS["bat_cycles"] * TECHNICAL_PARAMS["arb_spread"] * TECHNICAL_PARAMS["bat_eff"])
+    total_save_y1 = solar_save_y1 + arb_save_y1
+
+    if fin_type == "Kredīts" and net_inv > 0:
+        m_rate = interest_rate / 12
+        t_months = loan_years * 12
+        pmt = net_inv * (m_rate * (1+m_rate)**t_months) / ((1+m_rate)**t_months-1)
+    else:
+        pmt = 0
+
+    # --- 3. REZULTĀTU CILNES ---
+    tab1, tab2, tab3 = st.tabs(["📋 Piedāvājuma Kopsavilkums", "⚖️ Salīdzinājums", "📄 Pieņemtie dati"])
+
+    with tab1:
+        st.markdown("### Rekomendētā sistēmas jauda")
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Saules Paneļi", f"{calc_solar:.1f} kW")
+        m2.metric("Bateriju Krātuve", f"{calc_battery:.1f} kWh")
+        m3.metric("Atmaksāšanās", f"{net_inv/total_save_y1:.1f} Gadi")
+
+        st.divider()
+        res_col1, res_col2 = st.columns(2)
+        with res_col1:
+            st.write(f"**Kopējā projekta tāme:** {total_cost:,.0f} €")
+            st.write(f"**Valsts atbalsts ({int(grant_pct*100)}%):** -{total_cost*grant_pct:,.0f} €")
+            st.success(f"**Gala investīcija: {net_inv:,.0f} €**")
+        with res_col2:
+            st.info(f"**Ietaupījums 1. gadā:** {total_save_y1:,.0f} €")
+            if fin_type == "Kredīts":
+                st.write(f"**Mēneša kredīta maksājums:** {pmt:,.2f} €")
+                m_profit = (total_save_y1 / 12) - pmt
+                st.write(f"**Mēneša ieguvums (Cash-flow):** {m_profit:,.2f} €")
+
+    with tab2:
+        st.subheader("Finansiālais ieguvums 20 gadu laikā")
+        def simulate_20y():
+            inf, deg = TECHNICAL_PARAMS["elec_inflation"], TECHNICAL_PARAMS["degradation"]
+            n_list, s_list = [], []
+            c_n, c_s = 0, (net_inv if fin_type == "Pašu kapitāls" else 0)
+            for y in range(21):
+                n_list.append(c_n)
+                s_list.append(c_s)
+                annual_bill = (bill * 12) * ((1 + inf)**y)
+                annual_save = total_save_y1 * ((1 + inf)**y) * ((1 - deg)**y)
+                loan_cost = (pmt * 12) if (fin_type == "Kredīts" and y < loan_years) else 0
+                c_n += annual_bill
+                c_s += (annual_bill - annual_save + loan_cost)
+            return n_list, s_list
+
+        n_data, s_data = simulate_20y()
+        st.line_chart({"Maksāt Latvenergo": n_data, "Ar ESTACIJA risinājumu": s_data})
+        st.error(f"**Zaudējumi pēc 20 gadiem neinvestējot: {n_data[-1] - s_data[-1]:,.0f} €**")
+
+    with tab3:
+        st.subheader("Kā mēs aprēķinām Jūsu ieguvumus?")
+        st.write("Lai aprēķins būtu maksimāli precīzs, mēs izmantojam sekojošus tirgus pieņēmumus:")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            st.info(f"☀️ **Saules ražība:** {TECHNICAL_PARAMS['solar_yield']} kWh gadā uz katru uzstādīto kW.")
+            st.info(f"📉 **Sistēmas nolietojums:** Aprēķinā iekļauts paneļu efektivitātes zudums {TECHNICAL_PARAMS['degradation']*100}% gadā.")
+            st.info(f"⚡ **ST tarifs:** Mainīgā Sadales tīkla tarifa ietaupījums {TECHNICAL_PARAMS['grid_fee_save']} €/kWh.")
+        with c2:
+            st.info(f"🔋 **Enerģijas arbitrāža:** Baterija tiek uzlādēta lētajās stundās un izmantota dārgajās, veicot {TECHNICAL_PARAMS['bat_cycles']} ciklus gadā.")
+            st.info(f"📊 **Cenu starpība:** Vidējā peļņa no enerģijas arbitrāžas pieņēmta {TECHNICAL_PARAMS['arb_spread']} €/kWh.")
+            st.info(f"📈 **Elektrības inflācija:** Konservatīvs tirgus cenas pieauguma pieņēmums {TECHNICAL_PARAMS['elec_inflation']*100}% gadā.")
+
+else:
+    st.info("👋 Sveicināti! Ievadiet klienta patēriņa datus, lai ģenerētu analīzi.")
