@@ -99,7 +99,7 @@ if usage > 0:
         st.divider()
         res_col1, res_col2 = st.columns(2)
         with res_col1:
-            st.write(f"**Kopējā projekta tāme:** {total_cost:,.0f} €")
+            st.write(f"**Kopējā projekta tāme:** {total_cost:,.0f} € bez PVN")
             st.write(f"**Valsts atbalsts ({int(grant_pct*100)}%):** -{total_cost*grant_pct:,.0f} €")
             st.success(f"**Gala investīcija: {net_inv:,.0f} €**")
         with res_col2:
