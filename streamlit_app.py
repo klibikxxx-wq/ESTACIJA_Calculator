@@ -140,9 +140,9 @@ if usage > 0:
             st.info(f"📉 **Sistēmas nolietojums:** Aprēķinā iekļauts paneļu efektivitātes zudums {TECHNICAL_PARAMS['degradation']*100}% gadā.")
             st.info(f"⚡ **ST tarifs:** Mainīgā Sadales tīkla tarifa ietaupījums {TECHNICAL_PARAMS['grid_fee_save']} €/kWh.")
         with c2:
-            st.info(f"🔋 **Enerģijas arbitrāža:** Baterija tiek uzlādēta lētajās stundās un izmantota dārgajās, veicot {TECHNICAL_PARAMS['bat_cycles']} ciklus gadā.")
-            st.info(f"📊 **Cenu starpība:** Vidējā peļņa no enerģijas arbitrāžas pieņēmta {TECHNICAL_PARAMS['arb_spread']} €/kWh.")
+            st.info(f"🔋 **Enerģijas arbitrāža:** Baterija tiek uzlādēta lētajās stundās un izmantota dārgajās.")
+            st.info(f"📊 **Cenu starpība:** Vidējā peļņa no enerģijas cenas svārstības pieņemta {TECHNICAL_PARAMS['arb_spread']} €/kWh.")
             st.info(f"📈 **Elektrības inflācija:** Konservatīvs tirgus cenas pieauguma pieņēmums {TECHNICAL_PARAMS['elec_inflation']*100}% gadā.")
 
 else:
-    st.info("👋 Sveicināti! Ievadiet klienta patēriņa datus, lai ģenerētu analīzi.")
+    st.info("👋 Sveicināti! Ievadiet patēriņa vai rēķina datus, lai ģenerētu analīzi.")
