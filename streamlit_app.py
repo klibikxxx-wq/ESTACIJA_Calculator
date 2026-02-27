@@ -5,6 +5,7 @@ import numpy_financial as npf # Nepieciešams pip install numpy-financial
 st.set_page_config(page_title="ESTACIJA Business ROI Pro", page_icon="📈", layout="wide")
 
 # --- STILS UN VIRSRAKSTS ---
+st.image("New_logo1.png", width=300)
 st.title("☀️ ESTACIJA Saules & Akumulatoru ROI Pro")
 st.markdown("### Profesionāla ekonomiskā simulācija biznesa klientiem")
 
